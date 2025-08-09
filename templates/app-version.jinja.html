@@ -1,0 +1,698 @@
+{% extends "base.jinja.html" %}
+
+{% block content %}
+<style>
+html, body {
+  height: 100%;
+}
+body {
+  background: linear-gradient(135deg, #e0e7ef 0%, #f8fafc 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.version-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  flex: 1 0 auto;
+  background: none;
+  padding: 0;
+  height: 100%;
+}
+.version-glass {
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 8px 32px rgba(60,60,120,0.18), 0 1.5px 8px rgba(25,118,210,0.08);
+  border-radius: 32px;
+  padding: 56px 64px 40px 64px;
+  margin-top: 92px;
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(30,64,175,0.08);
+  position: relative;
+  transition: box-shadow 0.3s;
+  margin-bottom: 0;
+}
+.version-glass[dir='rtl'] { align-items: flex-end; }
+.version-glass[dir='ltr'] { align-items: flex-start; }
+.version-title, .version-meta, .version-info, .version-desc, .version-stats {
+  text-align: left;
+}
+.version-glass[dir='rtl'] .version-title,
+.version-glass[dir='rtl'] .version-meta,
+.version-glass[dir='rtl'] .version-info,
+.version-glass[dir='rtl'] .version-desc,
+.version-glass[dir='rtl'] .version-stats {
+  text-align: right;
+}
+.version-app-icon {
+  max-width: 120px;
+  height: 120px;
+  border-radius: 24px;
+  box-shadow: 0 2px 12px rgba(60,60,120,0.13);
+  object-fit: cover;
+  margin-bottom: 22px;
+  border: 3px solid #e3f2fd;
+  background: #f5f7fa;
+}
+.version-title {
+  font-size: 2.3rem;
+  font-weight: 900;
+  color: #1a237e;
+  margin-bottom: 8px;
+  letter-spacing: 1.2px;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(25,118,210,0.06);
+}
+.version-meta {
+  color: #607d8b;
+  font-size: 1.13rem;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+.version-glass[dir='ltr'] .version-meta {
+  justify-content: flex-start;
+  text-align: left;
+}
+.version-glass[dir='rtl'] .version-meta {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  text-align: right;
+}
+.version-info {
+  color: #374151;
+  font-size: 1.13rem;
+  margin-bottom: 8px;
+  width: 100%;
+}
+.version-glass[dir='ltr'] .version-info {
+  text-align: left;
+}
+.version-glass[dir='rtl'] .version-info {
+  text-align: right;
+  direction: rtl;
+}
+.version-desc {
+  color: #607d8b;
+  font-size: 1.09rem;
+  margin-bottom: 18px;
+  text-align: center;
+  background: #f5f7fa;
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 4px rgba(60,60,120,0.06);
+}
+.version-qr {
+  background: #f5f7fa;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(60,60,120,0.08);
+  display: flex;
+  justify-content: center;
+}
+.version-download-btn {
+  display: inline-block;
+  background: linear-gradient(90deg, #1976d2 0%, #43a047 100%);
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.22rem;
+  padding: 16px 44px;
+  border-radius: 16px;
+  text-decoration: none;
+  box-shadow: 0 2px 12px rgba(60,60,120,0.13);
+  transition: background 0.2s, box-shadow 0.2s;
+  margin-bottom: 12px;
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.version-download-btn:active::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 200%; height: 200%;
+  background: rgba(255,255,255,0.18);
+  border-radius: 50%;
+  transform: translate(-50%,-50%) scale(0.7);
+  animation: ripple 0.5s linear;
+  pointer-events: none;
+}
+@keyframes ripple {
+  to { transform: translate(-50%,-50%) scale(1.2); opacity: 0; }
+}
+.version-download-btn:hover {
+  background: #1976d2;
+  box-shadow: 0 4px 18px rgba(25,118,210,0.13);
+}
+.version-view-app {
+  display: inline-block;
+  color: #1976d2;
+  text-decoration: underline;
+  font-size: 1.08rem;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+.version-stats {
+  margin: 22px 0 0 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 24px;
+  align-items: stretch;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+}
+.stats-card {
+  background: rgba(245,247,250,0.97);
+  border-radius: 16px;
+  box-shadow: 0 1px 6px rgba(60,60,120,0.07);
+  padding: 18px 22px 14px 22px;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  position: relative;
+  transition: box-shadow 0.2s;
+}
+.stats-card .stats-icon {
+  font-size: 1.7em;
+  margin-bottom: 2px;
+  color: #1976d2;
+}
+.stats-card .stats-value {
+  font-size: 1.35em;
+  font-weight: 900;
+  color: #1976d2;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  animation: popIn 0.7s cubic-bezier(.23,1.12,.67,.98);
+}
+.stats-card .stats-label {
+  font-size: 1em;
+  color: #607d8b;
+  font-weight: 500;
+  margin-bottom: 0;
+  text-align: center;
+}
+.version-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  gap: 40px;
+}
+.version-header-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+.version-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 160px;
+}
+.version-header-main {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 28px;
+  width: 100%;
+}
+.version-header-main[dir='rtl'] { flex-direction: row-reverse; }
+.version-meta-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .version-header { gap: 18px; }
+  .version-header-main { gap: 12px; }
+}
+@media (max-width: 700px) {
+  .version-header { flex-direction: column; align-items: center; gap: 0; }
+  .version-header-left, .version-header-right { align-items: center; width: 100%; }
+  .version-header-main {
+    flex-direction: column !important;
+    align-items: center;
+    gap: 0;
+  }
+  .version-meta-info { align-items: center; width: 100%; }
+}
+@media (max-width: 700px) {
+  .version-stats { flex-direction: column; gap: 12px; align-items: center; }
+  .stats-card { min-width: 0; width: 100%; }
+}
+.version-desc-wide {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f5f7fa;
+  border-radius: 14px;
+  padding: 18px 24px;
+  margin: 24px 0 18px 0;
+  color: #607d8b;
+  font-size: 1.13rem;
+  box-shadow: 0 1px 4px rgba(60,60,120,0.06);
+  width: 100%;
+  text-align: left;
+}
+.version-desc-wide .desc-icon {
+  font-size: 1.5em;
+  margin-right: 6px;
+  margin-top: 2px;
+}
+.version-desc-wide .desc-title {
+  font-weight: 700;
+  color: #1976d2;
+  margin-right: 6px;
+}
+.version-desc-wide .desc-text {
+  flex: 1;
+}
+@media (max-width: 700px) {
+  .version-desc-wide {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 14px 8px;
+  }
+  .version-desc-wide .desc-icon, .version-desc-wide .desc-title, .version-desc-wide .desc-text {
+    margin-right: 0;
+  }
+}
+@media (max-width: 700px) {
+  .version-meta, .version-info { justify-content: center !important; text-align: center !important; }
+}
+/* Add Play Store style CSS */
+.playstore-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #1a237e;
+  margin-bottom: 18px;
+  letter-spacing: 1.2px;
+  text-align: left;
+}
+.playstore-header-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 32px;
+  width: 100%;
+  margin-bottom: 18px;
+}
+.playstore-app-icon img {
+  width: 96px;
+  height: 96px;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+  object-fit: cover;
+  background: #f5f7fa;
+}
+.app-icon-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+  background: #f5f7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #90a4ae;
+}
+.playstore-app-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+}
+.playstore-developer {
+  color: #43a047;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.playstore-stats-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  align-items: center;
+  justify-content: center;
+  background: none;
+}
+.playstore-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  padding: 0 12px;
+  position: relative;
+  font-size: 1.13em;
+  color: #1976d2;
+  font-weight: 700;
+}
+.playstore-stat-main {
+  min-width: 120px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#playstore-rating-stars {
+  font-size: 1.13em;
+  color: #1976d2;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.playstore-stat-sub {
+  font-size: 1.05em;
+  color: #607d8b;
+  font-weight: 500;
+  text-align: center;
+}
+.playstore-stat-divider {
+  width: 1.5px;
+  background: #e0e7ef;
+  margin: 0 8px;
+  border-radius: 2px;
+  height: 32px;
+  align-self: center;
+}
+.playstore-stat-value {
+  font-weight: 700;
+  font-size: 1.13em;
+  color: #1976d2;
+  line-height: 1.1;
+}
+.playstore-stat-label {
+  font-size: 1.08em;
+  color: #607d8b;
+  margin-top: 2px;
+  font-weight: 500;
+}
+.playstore-stat-sub {
+  font-size: 0.98em;
+  color: #607d8b;
+  margin-top: 2px;
+  font-weight: 500;
+}
+.playstore-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+}
+.playstore-install-btn {
+  display: inline-block;
+  background: linear-gradient(90deg, #1976d2 0%, #43a047 100%);
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.18rem;
+  padding: 12px 36px;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+  transition: background 0.2s;
+  margin-bottom: 2px;
+}
+.playstore-install-btn:hover {
+  background: #1976d2;
+}
+.playstore-size {
+  color: #607d8b;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+.playstore-desc {
+  background: #f5f7fa;
+  border-radius: 14px;
+  padding: 18px 24px;
+  margin: 24px 0 18px 0;
+  color: #607d8b;
+  font-size: 1.13rem;
+  box-shadow: 0 1px 4px rgba(60,60,120,0.06);
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.playstore-desc .desc-title {
+  font-weight: 700;
+  color: #1976d2;
+  margin-bottom: 4px;
+}
+@media (max-width: 900px) {
+  .playstore-header-row { gap: 12px; }
+}
+@media (max-width: 700px) {
+  .playstore-header-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .playstore-left-col, .playstore-actions {
+    align-items: center;
+    width: 100%;
+    margin: 0;
+  }
+  .playstore-top-row { flex-direction: column; align-items: center; gap: 0; }
+  .playstore-meta-info { align-items: center; text-align: center; }
+  .playstore-actions { margin-top: 24px; }
+}
+/* Add QR code style */
+.playstore-qr {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.playstore-size-inside {
+  font-size: 0.98em;
+  color: #e3f2fd;
+  font-weight: 500;
+  margin-top: 2px;
+  letter-spacing: 0.01em;
+  display: block;
+  text-align: center;
+}
+/* Add Play Store meta-info style */
+.playstore-meta-info {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+}
+.version-meta, .version-info {
+  margin-bottom: 0;
+  line-height: 1.7;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .playstore-meta-info { align-items: center; text-align: center; }
+  .version-meta, .version-info { white-space: normal; }
+}
+/* Add Play Store top-row and left-col style */
+.playstore-header-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 32px;
+  width: 100%;
+  margin-bottom: 18px;
+}
+.playstore-left-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+  gap: 0;
+}
+.playstore-top-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+@media (max-width: 900px) {
+  .playstore-header-row { gap: 12px; }
+  .playstore-top-row { gap: 8px; }
+}
+@media (max-width: 700px) {
+  .playstore-header-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .playstore-left-col { align-items: center; width: 100%; }
+  .playstore-top-row { flex-direction: column; align-items: center; gap: 0; }
+  .playstore-meta-info { align-items: center; text-align: center; }
+}
+.playstore-stat-rating {
+  min-width: 90px;
+}
+.playstore-star {
+  color: #1976d2;
+  font-size: 1.2em;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+.playstore-stat-sub {
+  font-size: 1.05em;
+  color: #607d8b;
+  margin-top: 2px;
+  font-weight: 500;
+  text-align: center;
+}
+footer {
+  width: 100%;
+  text-align: center;
+  margin-top: auto;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+.playstore-title-and-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+}
+.playstore-title {
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: #1a237e;
+  margin-bottom: 0;
+  letter-spacing: 1.2px;
+  text-align: left;
+}
+@media (max-width: 700px) {
+  .playstore-title-and-stats { align-items: center; }
+  .playstore-title { text-align: center; }
+}
+</style>
+<main class="version-main" {% if lang == 'ar' %}dir="rtl"{% else %}dir="ltr"{% endif %}>
+  <div class="version-glass" {% if lang == 'ar' %}dir="rtl"{% else %}dir="ltr"{% endif %}>
+    <div class="playstore-header-row">
+      <div class="playstore-left-col">
+        <div class="playstore-top-row">
+          <div class="playstore-app-icon">
+            {% if app_info.app_picture_url %}
+              <img src="{{ app_info.app_picture_url }}" alt="App Picture" />
+            {% else %}
+              <div class="app-icon-placeholder">📱</div>
+            {% endif %}
+          </div>
+          <div class="playstore-title-and-stats">
+            <div class="playstore-title">{{ app_info.app_title }}</div>
+            <div class="playstore-stats-row">
+              <div class="playstore-stat playstore-stat-main">
+                <div id="playstore-rating-stars">-</div>
+                <div id="playstore-reviews" class="playstore-stat-sub">-</div>
+              </div>
+              <div class="playstore-stat-divider"></div>
+              <div class="playstore-stat" style="text-align: center; width: 100%;">
+                <div class="playstore-stat-value" id="playstore-downloads">-</div>
+                <div class="playstore-stat-label">{{ tr('downloads_count') }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="playstore-meta-info">
+          <div class="version-meta" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
+            <span style="background: #e3f2fd; color: #1976d2; border-radius: 8px; padding: 2px 10px; font-weight: 600;">{{ tr('platform_' ~ app_info.platform) }}</span>
+            <span>{{ tr('bundle_id') }}: {{ app_info.bundle_id }}</span>
+          </div>
+          <div class="version-info" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">{{ tr('version') }}: {{ app_info.bundle_version }}</div>
+          <div class="version-info" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">{{ tr('uploaded') }}: {% if app_info.created_at %}<time datetime="{{ app_info.created_at }}">{{ app_info.created_at }}</time>{% endif %}</div>
+        </div>
+      </div>
+      <div class="playstore-app-info">
+        <div class="playstore-developer">{{ company_name }}</div>
+      </div>
+      <div class="playstore-actions">
+        <div class="playstore-qr">
+          <img src="/get/{{ app_info.upload_id }}/qrcode" alt="QR Code" style="width: 150px; height: 150px; display: block; margin: 0 auto 18px auto;" />
+        </div>
+        {% if app_info.platform == 'android' %}
+          {% set download_url = '/get/' ~ app_info.upload_id ~ '/app.apk' %}
+        {% else %}
+          {% set download_url = '/get/' ~ app_info.upload_id ~ '/app.ipa' %}
+        {% endif %}
+        <a href="{{ download_url }}" class="playstore-install-btn" download style="text-align: center; width: 100%;">
+          {{ tr('download') }}
+          <div class="playstore-size-inside">{{ app_info.human_file_size }}</div>
+        </a>
+      </div>
+    </div>
+    <div class="playstore-desc">
+      <span class="desc-title" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}" style="text-align: {{ 'right' if lang == 'ar' else 'left' }}">{{ tr('description') }}:</span>
+      <span class="desc-text" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}" style="text-align: {{ 'right' if lang == 'ar' else 'left' }}">{{ app_info.app_description }}</span>
+    </div>
+    <hr style="width: 80%; border: none; border-top: 1.5px solid #e0e7ef; margin: 18px 0 14px 0;" />
+    <div style="width: 100%; display: flex; justify-content: center;">
+      <a href="/app/{{ app_info.bundle_id }}" class="version-view-app">{{ tr('view_app') }}</a>
+    </div>
+  </div>
+  <footer style="width: 100%; text-align: center; margin-top: 32px; margin-bottom: 0;">
+    {% if logo_url %}
+      <img src="{{logo_url}}" alt="logo" style="max-width: 220px; height: auto; margin-bottom: 12px; filter: drop-shadow(0 2px 8px rgba(60,60,120,0.10));" />
+    {% endif %}
+    <div style="font-size: 1.05rem; color: #333; margin-top: 8px;">
+      Powered by <a href="https://innovawide.com" target="_blank" style="color: #1976d2; text-decoration: none; font-weight: bold;">InnovaWide</a>
+    </div>
+  </footer>
+</main>
+<script>
+var translations = {{ translations|tojson|safe }};
+function tr(key) { return (translations && translations[key]) || key; }
+document.addEventListener('DOMContentLoaded', function() {
+  const bundleId = "{{ app_info.bundle_id }}";
+  fetch(`/admin/api/unique-downloads?bundle_id=${bundleId}`)
+    .then(r => r.json())
+    .then(res => {
+      const downloads = res.count || 0;
+      fetch(`/api/reviews/app/${bundleId}`)
+        .then(r => r.json())
+        .then(data => {
+          const reviews = data.reviews || [];
+          let avg = 0;
+          if (reviews.length) {
+            avg = reviews.reduce((a, r) => a + (r.rating || 0), 0) / reviews.length;
+          }
+          document.getElementById('playstore-rating-stars').textContent = avg.toFixed(1) + ' ★';
+          document.getElementById('playstore-reviews').textContent = reviews.length + ' ' + tr('reviews_count');
+          document.getElementById('playstore-downloads').textContent = downloads;
+        });
+    });
+});
+</script>
+{% endblock %} 

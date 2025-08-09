@@ -1,0 +1,12 @@
+{% extends "base.jinja.html" %}
+
+{% block content %}
+<main style="min-height: 60vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch;">
+  <div style="flex: 1 0 auto; width: 100%; max-width: 800px; margin: 90px auto 0 auto; background: #fff; border-radius: 22px; box-shadow: 0 4px 24px rgba(60,60,120,0.10); border: 1.5px solid #e0e7ef; padding: 48px 36px 36px 36px;">
+    <h1 style="font-size: 2.2rem; font-weight: 800; color: #1a237e; margin-bottom: 32px; letter-spacing: 1px; text-align: center;">{{ tr('menu_about_us') }}</h1>
+    <p style="color: #607d8b; font-size: 1.18rem; margin-bottom: 18px; text-align: center;">{{ tr('about_us_intro') }}</p>
+    <p style="color: #607d8b; font-size: 1.18rem; margin-bottom: 18px; text-align: center;">{{ tr('about_us_mission') }}</p>
+    <p style="color: #607d8b; font-size: 1.18rem; margin-bottom: 0; text-align: center;">{{ tr('about_us_join') }}</p>
+  </div>
+</main>
+{% endblock %} 

@@ -1,0 +1,18 @@
+{
+  "builds": [
+    {
+      "src": "app_distribution_server/app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app_distribution_server/app.py"
+    }
+  ],
+  "env": {
+    "UPLOADS_SECRET_AUTH_TOKEN": "your-secret-token-change-this",
+    "APP_BASE_URL": "https://appsyra.bechattaoui.dev"
+  }
+}

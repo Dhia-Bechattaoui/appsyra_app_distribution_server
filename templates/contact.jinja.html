@@ -1,0 +1,17 @@
+{% extends "base.jinja.html" %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 60px auto 0 auto; background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(60,60,120,0.10); border: 1.5px solid #e0e7ef; padding: 64px 36px 36px 36px; text-align: center;">
+  <h1 style="font-size: 2.2rem; font-weight: 800; color: #1a237e; margin-bottom: 32px; letter-spacing: 1px;">{{ tr('contact_title') }}</h1>
+  <div style="font-size: 1.15rem; color: #333; margin-bottom: 18px;">{{ tr('contact_intro') }}</div>
+  <div style="margin-bottom: 18px;">
+    <strong>{{ tr('contact_email') }}</strong> <a href="mailto:bechattaoui.dhiaeddine@outlook.com" style="color:#1976d2; text-decoration:underline;">bechattaoui.dhiaeddine@outlook.com</a>
+  </div>
+  <div style="margin-bottom: 18px;">
+    <strong>{{ tr('contact_linkedin') }}</strong> <a href="https://www.linkedin.com/in/dhiaeddine-bechattaoui" target="_blank" style="color:#1976d2; text-decoration:underline;">dhiaeddine-bechattaoui</a>
+  </div>
+  <div style="margin-bottom: 18px;">
+    <strong>{{ tr('contact_github') }}</strong> <a href="https://github.com/Dhia-Bechattaoui/appsyra_app_distribution_server" target="_blank" style="color:#1976d2; text-decoration:underline;">@Dhia-Bechattaoui/appsyra_app_distribution_server</a>
+  </div>
+</div>
+{% endblock %} 

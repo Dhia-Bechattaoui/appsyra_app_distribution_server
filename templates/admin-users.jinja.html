@@ -1,0 +1,178 @@
+{% extends "admin-base.jinja.html" %}
+{% block content %}
+<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 0;">
+  <main style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 16px 16px 32px 16px;">
+    <div style="width: 100%; max-width: 700px; margin-top: 8px; background: #fff; border-radius: 22px; box-shadow: 0 4px 24px rgba(60,60,120,0.10); border: 1.5px solid #e0e7ef; padding: 28px 24px 24px 24px;">
+      <h1 style="font-size: 2.2rem; font-weight: 800; color: #1a237e; margin-bottom: 20px; letter-spacing: 1px; text-align: center;">{{ tr('users_title') }}</h1>
+      <div id="userList">
+        <table style="width:100%; border-collapse:collapse; margin-bottom:24px; table-layout:fixed;">
+          <thead>
+            <tr style="background:#f5f7fa; color:#374151;">
+              <th style="padding:10px 8px; text-align:left;">{{ tr('users_username') }}</th>
+              <th style="padding:10px 8px; text-align:left;">{{ tr('users_role') }}</th>
+              <th style="padding:10px 8px; text-align:left;">{{ tr('users_edit') }}</th>
+              <th style="padding:10px 8px; text-align:left;">{{ tr('users_delete') }}</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody"></tbody>
+        </table>
+      </div>
+      <!-- Edit User Modal (move outside main for overlay) -->
+      <div id="editUserModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(30,30,40,0.18); z-index:1000; align-items:center; justify-content:center;">
+        <form id="editUserForm" style="background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(60,60,120,0.10); padding:32px 28px; min-width:320px; display:flex; flex-direction:column; gap:16px; align-items:stretch; margin:auto;">
+          <h2 style="font-size:1.3rem; color:#1976d2; margin-bottom:8px;">{{ tr('users_edit') }}</h2>
+          <input type="hidden" name="old_username">
+          <label>{{ tr('users_username') }}<input type="text" name="username" required style="padding:8px; border-radius:6px; border:1px solid #e0e7ef;"></label>
+          <label>{{ tr('users_password') }}<input type="password" name="password" placeholder="(leave blank to keep)" style="padding:8px; border-radius:6px; border:1px solid #e0e7ef;"></label>
+          <div style="display:flex; gap:12px; justify-content:flex-end;">
+            <button type="button" id="cancelEditBtn" style="background:#e0e7ef; color:#607d8b; border:none; border-radius:6px; padding:8px 18px;">Cancel</button>
+            <button type="submit" style="background:#1976d2; color:#fff; font-weight:bold; border:none; border-radius:6px; padding:8px 18px;">Save</button>
+          </div>
+        </form>
+      </div>
+      <form id="createUserForm" method="post" style="margin-top: 32px; display: flex; gap: 12px; align-items: flex-end;">
+        <div>
+          <label>{{ tr('users_username') }}</label>
+          <input type="text" name="username" required style="padding: 8px; border-radius: 6px; border: 1px solid #e0e7ef;">
+        </div>
+        <div>
+          <label>{{ tr('users_password') }}</label>
+          <input type="password" name="password" required style="padding: 8px; border-radius: 6px; border: 1px solid #e0e7ef;">
+        </div>
+        <div>
+          <label>{{ tr('users_role') }}</label>
+          <select name="role" style="padding: 8px; border-radius: 6px; border: 1px solid #e0e7ef;">
+            <option value="user">{{ tr('users_user') }}</option>
+            <option value="admin">{{ tr('users_admin') }}</option>
+          </select>
+        </div>
+        <button type="submit" style="background: #1976d2; color: #fff; font-weight: bold; border: none; border-radius: 6px; padding: 10px 18px;">{{ tr('users_create') }}</button>
+      </form>
+    </div>
+  </main>
+</div>
+<script>
+const currentUserRole = "{{ current_user_role }}";
+function getCookie(name) {
+  const value = document.cookie.split(';').find(row => row.trim().startsWith(name + '='))?.split('=')[1];
+  return value ? decodeURIComponent(value) : null;
+}
+let currentUser = getCookie('username');
+fetch('/admin/api/users')
+  .then(r => r.json())
+  .then(data => {
+    if(data.users) {
+      renderUsers(data.users);
+    }
+  });
+
+function renderUsers(users) {
+  const tbody = document.getElementById('userTableBody');
+  tbody.innerHTML = '';
+  console.log('Current user:', currentUser);
+  users.forEach(u => {
+    console.log('User:', u.username, 'Role:', u.role);
+    const tr = document.createElement('tr');
+    let canEdit = false, canDelete = false;
+    // Permissions
+    if (currentUserRole === 'owner') {
+      canEdit = u.role !== 'owner';
+      canDelete = u.role !== 'owner';
+    } else if (currentUserRole === 'admin') {
+      canEdit = u.role === 'user';
+      canDelete = u.role === 'user';
+    }
+    tr.innerHTML = `
+      <td style="padding:10px 8px; text-align:left;">${u.username}</td>
+      <td style="padding:10px 8px; text-align:left;">
+        <select ${canEdit ? '' : 'disabled'} data-username="${u.username}" class="role-select" style="padding:4px 8px; border-radius:6px; border:1px solid #e0e7ef;">
+          <option value="user" ${u.role==='user'?'selected':''}>{{ tr('users_user') }}</option>
+          <option value="admin" ${u.role==='admin'?'selected':''}>{{ tr('users_admin') }}</option>
+          ${currentUserRole === 'owner' ? `<option value="owner" ${u.role==='owner'?'selected':''}>{{ tr('users_owner') }}</option>` : ''}
+        </select>
+      </td>
+      <td style="padding:10px 8px; text-align:left;"><button ${canEdit ? '' : 'disabled'} class="edit-btn" data-username="${u.username}" style="background:#e0e7ef; color:#1976d2; border:none; border-radius:6px; padding:4px 10px;">{{ tr('users_edit') }}</button></td>
+      <td style="padding:10px 8px; text-align:left;">${canDelete ? `<button class="delete-btn" data-username="${u.username}" style="background:#e57373; color:#fff; border:none; border-radius:6px; padding:4px 10px;">{{ tr('users_delete') }}</button>` : ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  // Attach event listeners
+  document.querySelectorAll('.delete-btn:not([disabled])').forEach(btn => {
+    btn.onclick = function() {
+      const username = this.getAttribute('data-username');
+      if(confirm('Are you sure you want to delete ' + username + '?')) {
+        fetch('/admin/api/users/delete', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username})
+        }).then(r => r.json()).then(res => { if(res.ok) location.reload(); else alert('Delete failed'); });
+      }
+    };
+  });
+  document.querySelectorAll('.role-select:not([disabled])').forEach(sel => {
+    sel.onchange = function() {
+      const username = this.getAttribute('data-username');
+      const role = this.value;
+      fetch('/admin/api/users/role', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, role})
+      }).then(r => r.json()).then(res => { if(res.ok) location.reload(); else alert('Role change failed'); });
+    };
+  });
+  document.querySelectorAll('.edit-btn:not([disabled])').forEach(btn => {
+    btn.onclick = function() {
+      const username = this.getAttribute('data-username');
+      const user = users.find(u => u.username === username);
+      const modal = document.getElementById('editUserModal');
+      const form = document.getElementById('editUserForm');
+      form.old_username.value = user.username;
+      form.username.value = user.username;
+      form.password.value = '';
+      modal.style.display = 'flex';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
+      modal.focus();
+    };
+  });
+}
+
+document.getElementById('cancelEditBtn').onclick = function() {
+  document.getElementById('editUserModal').style.display = 'none';
+};
+document.getElementById('editUserForm').onsubmit = function(e) {
+  e.preventDefault();
+  const data = {
+    old_username: this.old_username.value,
+    username: this.username.value,
+    password: this.password.value
+  };
+  fetch('/admin/api/users/update', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  }).then(r => r.json()).then(res => {
+    if(res.ok) location.reload();
+    else alert('Update failed');
+  });
+};
+document.getElementById('createUserForm').onsubmit = function(e) {
+  e.preventDefault();
+  const data = {
+    username: this.username.value,
+    password: this.password.value,
+    role: this.role.value
+  };
+  fetch('/admin/api/users/create', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  }).then(r => r.json()).then(res => {
+    if(res.ok) location.reload();
+    else if(res.error === 'exists') alert('User already exists');
+    else if(res.error === 'forbidden') alert('Not allowed');
+    else alert('Create failed');
+  });
+};
+</script>
+{% endblock %} 

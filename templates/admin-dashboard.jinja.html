@@ -1,0 +1,249 @@
+{% extends "admin-base.jinja.html" %}
+{% block content %}
+<style>
+.review-app-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  background: #f5f7fa;
+}
+.review-app-icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  object-fit: cover;
+}
+</style>
+<div class="dashboard-flex" style="display: flex; flex-direction: row; width: 100%; gap: 32px; align-items: flex-start; justify-content: center;">
+  <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:36px; max-width:800px; margin-left:auto; margin-right:auto; height: calc(100vh - 32px); justify-content: center;">
+    <div class="dashboard-card" style="flex:1 1 0; min-height:260px; display:flex; flex-direction:column; justify-content:center;">
+      <div class="dashboard-card-header">
+        <div class="dashboard-card-title"><span>📈</span>{{ tr('downloads_chart') }}</div>
+        <div style="display:flex; gap:8px;">
+          <button id="groupByDay" style="padding:6px 16px; border-radius:6px; border:none; background:#1976d2; color:#fff; font-weight:600; cursor:pointer;">{{ tr('downloads_day') }}</button>
+          <button id="groupByMonth" style="padding:6px 16px; border-radius:6px; border:none; background:#e0e7ef; color:#1976d2; font-weight:600; cursor:pointer;">{{ tr('downloads_month') }}</button>
+          <button id="groupByYear" style="padding:6px 16px; border-radius:6px; border:none; background:#e0e7ef; color:#1976d2; font-weight:600; cursor:pointer;">{{ tr('downloads_year') }}</button>
+        </div>
+      </div>
+      <div class="dashboard-card-content" style="flex:1 1 0; min-height:0; display:flex; flex-direction:column; justify-content:center; padding-top: 44px;">
+        <canvas id="downloadsChart" style="width:100%; max-width:650px; height:100%; min-height:180px;"></canvas>
+      </div>
+    </div>
+    <div class="dashboard-card" style="flex:1 1 0; min-height:260px; display:flex; flex-direction:column; justify-content:center;">
+      <div class="dashboard-card-header">
+        <div class="dashboard-card-title"><span>📝</span>{{ tr('reviews_title') }}</div>
+      </div>
+      <div class="dashboard-card-content reviews-scroll" style="flex:1 1 0; min-height:0; display:flex; flex-direction:column; justify-content:center;">
+        <div style="display:flex; gap:16px; margin-bottom:18px; align-items:center; flex-wrap:wrap;">
+          <select id="appFilter" style="padding:6px 12px; border-radius:6px; border:1px solid #e0e7ef; min-width:180px;"><option value="">{{ tr('reviews_title') }}</option></select>
+          <input id="reviewSearch" type="text" placeholder="{{ tr('reviews_write_reply') }}" style="flex:1; min-width:180px; padding:6px 12px; border-radius:6px; border:1px solid #e0e7ef;" />
+          <select id="replyStatusFilter" style="padding:6px 12px; border-radius:6px; border:1px solid #e0e7ef; min-width:120px;">
+            <option value="">{{ tr('reviews_title') }}</option>
+            <option value="noreply">{{ tr('reviews_no_reply') }}</option>
+            <option value="replied">{{ tr('reviews_replied') }}</option>
+          </select>
+        </div>
+        <div id="recentReviewsList" style="flex:1 1 0; min-height:0; overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="dashboard-rightbar">
+    <div class="activity-card">
+      <div class="activity-title">{{ tr('activity_title') }}</div>
+      <ul id="activityFeed" class="activity-feed"></ul>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var translations = {{ translations|tojson|safe }};
+  function tr(key) { return translations[key] || key; }
+  var company_name = {{ company_name|tojson|safe }};
+  window.tr = tr;
+  // Activity Feed
+  fetch('/admin/api/activity')
+    .then(r => r.json())
+    .then(res => {
+      const ul = document.getElementById('activityFeed');
+      ul.innerHTML = '';
+      res.data.forEach(item => {
+        const li = document.createElement('li');
+        li.style.display = 'flex';
+        li.style.alignItems = 'flex-start';
+        li.style.gap = '10px';
+        li.style.background = '#f8fafc';
+        li.style.borderRadius = '10px';
+        li.style.padding = '10px 12px 8px 12px';
+        li.style.marginBottom = '10px';
+        // Icon by activity type
+        let icon = document.createElement('span');
+        if (item.message.includes('created new app') || item.message.includes('أنشأ تطبيقًا')) icon.textContent = '🆕';
+        else if (item.message.includes('uploaded new version') || item.message.includes('رفع إصدارًا')) icon.textContent = '⬆️';
+        else if (item.message.includes('edited app') || item.message.includes('عدّل التطبيق')) icon.textContent = '✏️';
+        else if (item.message.includes('changed settings') || item.message.includes('غيّر الإعدادات')) icon.textContent = '⚙️';
+        else icon.textContent = '•';
+        icon.style.fontSize = '1.3em';
+        li.appendChild(icon);
+        // Message
+        let msg = document.createElement('span');
+        msg.textContent = item.message;
+        msg.style.flex = '1';
+        li.appendChild(msg);
+        // Timestamp
+        if (item.timestamp) {
+          let time = document.createElement('span');
+          time.textContent = new Date(item.timestamp).toLocaleString();
+          time.style.fontSize = '0.85em';
+          time.style.color = '#90a4ae';
+          time.style.marginLeft = '8px';
+          li.appendChild(time);
+        }
+        ul.appendChild(li);
+      });
+    });
+  // Chart.js code (unchanged)
+  let chart;
+  let currentGroup = 'day';
+  function fetchAndRender(groupBy) {
+    fetch(`/admin/api/download-stats?group_by=${groupBy}`)
+      .then(r => r.json())
+      .then(res => {
+        const labels = res.data.map(d => d.period);
+        const data = res.data.map(d => d.count);
+        if (chart) chart.destroy();
+        chart = new Chart(document.getElementById('downloadsChart').getContext('2d'), {
+          type: 'line',
+          data: { labels, datasets: [{ label: tr('downloads_label'), data, borderColor: '#1976d2', backgroundColor: 'rgba(25,118,210,0.08)', fill: true, tension: 0.35, pointRadius: 4, pointHoverRadius: 6 }] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true, position: 'top', labels: { color: '#374151', font: { size: 14, weight: 'bold' } } },
+              title: { display: false },
+              tooltip: { enabled: true, backgroundColor: '#fff', titleColor: '#1976d2', bodyColor: '#374151', borderColor: '#1976d2', borderWidth: 1 },
+              zoom: {
+                pan: { enabled: true, mode: 'x' },
+                zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+              }
+            },
+            layout: { padding: { left: 0, right: 0, top: 0, bottom: 0 } },
+            scales: {
+              x: { title: { display: true, text: (groupBy === 'day' ? tr('downloads_day') : groupBy === 'month' ? tr('downloads_month') : tr('downloads_year')), color: '#1976d2', font: { size: 15, weight: 'bold' } }, grid: { color: '#e0e7ef' }, ticks: { color: '#374151', font: { size: 13 } } },
+              y: { beginAtZero: true, grid: { color: '#e0e7ef' }, ticks: { color: '#374151', font: { size: 13 } } }
+            }
+          }
+        });
+      });
+  }
+  document.getElementById('groupByDay').onclick = function() {
+    currentGroup = 'day';
+    this.style.background = '#1976d2'; this.style.color = '#fff';
+    groupByMonth.style.background = groupByYear.style.background = '#e0e7ef';
+    groupByMonth.style.color = groupByYear.style.color = '#1976d2';
+    fetchAndRender('day');
+  };
+  document.getElementById('groupByMonth').onclick = function() {
+    currentGroup = 'month';
+    this.style.background = '#1976d2'; this.style.color = '#fff';
+    groupByDay.style.background = groupByYear.style.background = '#e0e7ef';
+    groupByDay.style.color = groupByYear.style.color = '#1976d2';
+    fetchAndRender('month');
+  };
+  document.getElementById('groupByYear').onclick = function() {
+    currentGroup = 'year';
+    this.style.background = '#1976d2'; this.style.color = '#fff';
+    groupByDay.style.background = groupByMonth.style.background = '#e0e7ef';
+    groupByDay.style.color = groupByMonth.style.color = '#1976d2';
+    fetchAndRender('year');
+  };
+  fetchAndRender('day');
+  // Recent Reviews
+  let allReviews = [];
+  fetch('/admin/api/recent-reviews')
+    .then(r => r.json())
+    .then(res => {
+      allReviews = res.reviews || [];
+      // Populate app filter
+      const appSet = new Set();
+      allReviews.forEach(r => appSet.add(JSON.stringify({title:r.app_title, id:r.bundle_id})));
+      const appFilter = document.getElementById('appFilter');
+      Array.from(appSet).sort().forEach(app => {
+        const obj = JSON.parse(app);
+        const opt = document.createElement('option');
+        opt.value = obj.id;
+        opt.textContent = obj.title + ' (' + obj.id + ')';
+        appFilter.appendChild(opt);
+      });
+      renderReviews();
+    });
+  function renderAdminReply(company, reply) {
+    return tr('reviews_admin_reply').replace(/\{\{ company_name \}\}/g, company).replace(/\{\{ reply \}\}/g, reply);
+  }
+
+  function renderReviews() {
+    const appVal = document.getElementById('appFilter').value;
+    const searchVal = document.getElementById('reviewSearch').value.toLowerCase();
+    const replyStatus = document.getElementById('replyStatusFilter').value;
+    const list = document.getElementById('recentReviewsList');
+    let filtered = allReviews.filter(r => (!appVal || r.bundle_id === appVal) &&
+      (r.username.toLowerCase().includes(searchVal) || r.comment.toLowerCase().includes(searchVal)) &&
+      (!replyStatus || (replyStatus === 'noreply' ? !r.reply : r.reply)));
+    if (!filtered.length) {
+      list.innerHTML = `<div style="color:#607d8b;">${tr('reviews_no_reviews_found')}</div>`;
+      return;
+    }
+    list.innerHTML = filtered.map(r => `
+      <div class="review-card${!r.reply ? ' no-reply' : ''}">
+        <div class="review-app">
+          ${r.app_picture_url ? `<img src="${r.app_picture_url}" alt="icon" class="review-app-icon">` : `<div class='review-app-icon'>📱</div>`}
+          <div class="review-app-info">
+            <a href="${r.app_page_url}" target="_blank" class="review-app-title">${r.app_title}</a>
+            <div class="review-app-bundle">${r.bundle_id}</div>
+          </div>
+          <button onclick="window.open('${r.app_page_url}','_blank')" class="review-go-btn">${tr('go_to_app')}</button>
+        </div>
+        <div class="review-user">${r.username} <span class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span></div>
+        <div class="review-text">${r.comment}</div>
+        <div class="review-time">${new Date(r.timestamp*1000).toLocaleString()}</div>
+        <div class="review-status">
+          <span class="review-status-badge${!r.reply ? ' no-reply' : ''}">${!r.reply ? tr('reviews_no_reply') : tr('reviews_replied')}</span>
+        </div>
+        ${r.reply ? `<div class='review-reply'><b>${company_name}:</b> ${r.reply}<div class='review-reply-meta'>${new Date(r.reply_timestamp*1000).toLocaleString()}</div></div>` : ''}
+        ${!r.reply ? `<form class='reply-form' data-username='${r.username}' data-bundle='${r.bundle_id}'><input type='text' placeholder='${tr('reviews_write_reply')}' /><button type='submit'>${tr('reviews_reply_button')}</button></form>` : ''}
+      </div>
+    `).join('');
+    // Add reply form handlers
+    document.querySelectorAll('.reply-form').forEach(form => {
+      form.onsubmit = function(e) {
+        e.preventDefault();
+        const input = this.querySelector('input');
+        const reply = input.value.trim();
+        if (!reply) return;
+        fetch('/api/reviews/reply', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            bundle_id: this.getAttribute('data-bundle'),
+            username: this.getAttribute('data-username'),
+            reply
+          })
+        }).then(r => r.json()).then(res => {
+          if(res.ok) location.reload();
+          else alert('Failed to submit reply');
+        });
+      };
+    });
+  }
+  document.getElementById('appFilter').onchange = renderReviews;
+  document.getElementById('reviewSearch').oninput = renderReviews;
+  document.getElementById('replyStatusFilter').onchange = renderReviews;
+});
+</script>
+{% endblock %} 

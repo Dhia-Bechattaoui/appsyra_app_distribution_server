@@ -1,0 +1,226 @@
+{% extends "base.jinja.html" %}
+
+{% block content %}
+<style>
+  .hero {
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+    padding: 64px 0 32px 0;
+    text-align: center;
+  }
+  .hero-logo {
+    height: 80px;
+    margin-bottom: 18px;
+  }
+  .hero-title {
+    font-size: 2.6rem;
+    font-weight: 900;
+    color: #1a237e;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+  .hero-slogan {
+    font-size: 1.35rem;
+    color: #607d8b;
+    margin-bottom: 28px;
+  }
+  .hero-btn {
+    background: linear-gradient(90deg, #1976d2 0%, #ff9800 100%);
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 14px 38px;
+    border-radius: 14px;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+    transition: background 0.2s;
+  }
+  .section {
+    max-width: 1100px;
+    margin: 48px auto;
+    padding: 0 18px;
+  }
+  .section-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1976d2;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .about-text {
+    font-size: 1.18rem;
+    color: #444;
+    text-align: center;
+    margin-bottom: 0;
+  }
+  .features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+  .feature-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(60,60,120,0.08);
+    padding: 28px 22px;
+    max-width: 320px;
+    flex: 1 1 260px;
+    text-align: center;
+  }
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    color: #43a047;
+  }
+  .apps-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+  .app-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(60,60,120,0.08);
+    padding: 18px 16px;
+    max-width: 240px;
+    flex: 1 1 180px;
+    text-align: center;
+  }
+  .app-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: #e0e7ef;
+  }
+  .testimonials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+  .testimonial-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(60,60,120,0.06);
+    padding: 22px 18px;
+    max-width: 340px;
+    flex: 1 1 220px;
+    text-align: center;
+    font-style: italic;
+  }
+  .testimonial-author {
+    margin-top: 12px;
+    font-weight: bold;
+    color: #1976d2;
+    font-style: normal;
+  }
+  .contact-section {
+    background: #e0e7ef;
+    border-radius: 18px;
+    padding: 32px 18px;
+    text-align: center;
+    margin-top: 48px;
+  }
+  .contact-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a237e;
+    margin-bottom: 12px;
+  }
+  .contact-info {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 6px;
+  }
+  @media (max-width: 900px) {
+    .features, .apps-list, .testimonials { flex-direction: column; align-items: center; }
+  }
+</style>
+
+<div class="hero" style="min-height: 55vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+  <img src="/static/logo.png" alt="Appsyra Logo" class="hero-logo" style="height: 400px; max-width: 90vw; padding: 32px 0; display: block; margin: 0 auto;" />
+  <div class="hero-slogan">{{ tr('home_hero_slogan') }}</div>
+  <a href="/apps" class="hero-btn" style="margin-bottom: 48px;">{{ tr('home_explore_apps') }}</a>
+</div>
+
+<div class="section">
+  <div class="section-title">{{ tr('home_about_title') }}</div>
+  <div class="about-text">{{ tr('home_about_text') }}</div>
+</div>
+
+<div class="section">
+  <div class="section-title">{{ tr('home_services_title') }}</div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <div class="feature-title">{{ tr('home_service_distribution') }}</div>
+      <div>{{ tr('home_service_distribution_desc') }}</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <div class="feature-title">{{ tr('home_service_web') }}</div>
+      <div>{{ tr('home_service_web_desc') }}</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚀</div>
+      <div class="feature-title">{{ tr('home_service_marketing') }}</div>
+      <div>{{ tr('home_service_marketing_desc') }}</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <div class="feature-title">{{ tr('home_service_design') }}</div>
+      <div>{{ tr('home_service_design_desc') }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">{{ tr('home_featured_apps') }}</div>
+  <div class="apps-list">
+    <div class="app-card">
+      <img src="/static/series-legend.png" class="app-icon" alt="Series Legend" />
+      <div style="font-weight:700; margin-bottom:4px;">Series Legend</div>
+      <div style="color:#607d8b; font-size:0.98rem;">{{ tr('home_series_legend_desc') }}</div>
+      <a href="https://play.google.com/store/apps/details?id=com.vipzone.serieslegend" target="_blank" style="display:block;margin-top:10px;color:#1976d2;text-decoration:underline;font-weight:600;">{{ tr('home_get_on_play') }}</a>
+    </div>
+    <div class="app-card">
+      <img src="/static/meplusu.png" class="app-icon" alt="Me+U" />
+      <div style="font-weight:700; margin-bottom:4px;">Me+U</div>
+      <div style="color:#607d8b; font-size:0.98rem;">{{ tr('home_meplusu_desc') }}</div>
+      <a href="https://play.google.com/store/apps/details?id=com.vipzone.meplusu" target="_blank" style="display:block;margin-top:10px;color:#1976d2;text-decoration:underline;font-weight:600;">{{ tr('home_get_on_play') }}</a>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">{{ tr('home_testimonials') }}</div>
+  <div class="testimonials">
+    <div class="testimonial-card">
+      {{ tr('home_testimonial_1') }}
+      <div class="testimonial-author">{{ tr('home_testimonial_1_author') }}</div>
+    </div>
+    <div class="testimonial-card">
+      {{ tr('home_testimonial_2') }}
+      <div class="testimonial-author">{{ tr('home_testimonial_2_author') }}</div>
+    </div>
+    <div class="testimonial-card">
+      {{ tr('home_testimonial_3') }}
+      <div class="testimonial-author">{{ tr('home_testimonial_3_author') }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="contact-section">
+  <div class="contact-title">{{ tr('home_contact_title') }}</div>
+  <div class="contact-info">{{ tr('home_contact_email') }} <a href="mailto:bechattaoui.dhiaeddine@outlook.com" style="color:#1976d2; text-decoration:underline;">bechattaoui.dhiaeddine@outlook.com</a></div>
+  <div class="contact-info">{{ tr('home_contact_linkedin') }} <a href="https://www.linkedin.com/in/dhiaeddine-bechattaoui" target="_blank" style="color:#1976d2; text-decoration:underline;">dhiaeddine-bechattaoui</a></div>
+  <div class="contact-info">{{ tr('home_contact_github') }} <a href="https://github.com/Dhia-Bechattaoui" target="_blank" style="color:#1976d2; text-decoration:underline;">@Dhia-Bechattaoui</a></div>
+</div>
+
+{% endblock %} 

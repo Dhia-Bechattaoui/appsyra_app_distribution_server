@@ -1,0 +1,22 @@
+{% extends "admin-base.jinja.html" %}
+{% block content %}
+<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 48px;">
+  <h1 style="font-size: 2.2rem; font-weight: 800; color: #1a237e; margin-bottom: 18px; letter-spacing: 1px;">{{ tr('admin_settings_title') }}</h1>
+  <form method="post" action="/admin/settings" style="width: 100%; max-width: 520px; background: #fff; border-radius: 18px; box-shadow: 0 2px 8px rgba(60,60,120,0.08); padding: 32px 28px; display: flex; flex-direction: column; gap: 18px; justify-content: flex-start;">
+    <label style="font-weight: 600; color: #374151;">{{ tr('admin_settings_duplicate_label') }}</label>
+    <select name="duplicate_upload_policy" style="padding: 12px; border-radius: 8px; border: 1px solid #e0e7ef; font-size: 1.1rem;">
+      <option value="error" {% if policy == 'error' %}selected{% endif %}>{{ tr('admin_settings_duplicate_error') }}</option>
+      <option value="replace" {% if policy == 'replace' %}selected{% endif %}>{{ tr('admin_settings_duplicate_replace') }}</option>
+    </select>
+    <label style="font-weight: 600; color: #374151;">{{ tr('admin_settings_language_label') }}</label>
+    <select name="lang" style="padding: 12px; border-radius: 8px; border: 1px solid #e0e7ef; font-size: 1.1rem;">
+      <option value="en" {% if lang == 'en' %}selected{% endif %}>{{ tr('admin_settings_language_en') }}</option>
+      <option value="ar" {% if lang == 'ar' %}selected{% endif %}>{{ tr('admin_settings_language_ar') }}</option>
+    </select>
+    <button type="submit" style="background: linear-gradient(90deg, #1976d2 0%, #43a047 100%); color: #fff; font-weight: bold; font-size: 1.1rem; padding: 12px 0; border-radius: 8px; border: none; cursor: pointer; transition: background 0.2s; margin-top: 18px;">{{ tr('admin_settings_save') }}</button>
+    {% if message %}
+      <div style="color: #43a047; margin-top: 8px; font-size: 1rem;">{{ tr('admin_settings_saved') }}</div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %} 

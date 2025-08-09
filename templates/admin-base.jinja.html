@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="{{ 'ar' if lang == 'ar' else 'en' }}" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page_title }}</title>
+    <style>
+      html, body { margin: 0; padding: 0; box-sizing: border-box; overflow-x: hidden; }
+      body.admin { background: #f4f6fa; font-family: system-ui, sans-serif; }
+      .admin-main { display: flex; min-height: 100vh; background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%); margin: 0; padding: 0; box-sizing: border-box; width: 100vw; overflow-x: hidden; }
+      .admin-sidebar { width: 220px; background: #fff; box-shadow: 2px 0 16px rgba(60,60,120,0.08); display: flex; flex-direction: column; align-items: stretch; padding: 0; }
+      .admin-sidebar nav { display: flex; flex-direction: column; gap: 8px; margin-top: 32px; }
+      .admin-sidebar a { padding: 12px 32px; color: #1a237e; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 12px; border-radius: 8px; transition: background 0.18s, color 0.18s; }
+      .admin-sidebar a.active, .admin-sidebar a:hover { background: #e3f2fd; color: #1976d2; }
+      .admin-sidebar a.logout { color: #d32f2f; }
+      .admin-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0; min-width: 0; margin: 0; box-sizing: border-box; }
+      @media (max-width: 900px) { .admin-sidebar { display: none; } .admin-content { padding: 32px 4px; } }
+      /* Dashboard-specific styles */
+      .dashboard-card {
+        background: #fff; border-radius: 22px; box-shadow: 0 4px 24px rgba(60,60,120,0.10); padding: 0; width: 100%; max-width: 800px; margin-bottom: 0; overflow: hidden; transition: box-shadow 0.2s;
+      }
+      .dashboard-card-header {
+        padding: 32px; display: flex; align-items: center; justify-content: space-between;
+      }
+      .dashboard-card-title {
+        font-size: 1.22rem; font-weight: 800; color: #1976d2; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;
+      }
+      .dashboard-card-content { padding: 20px; box-sizing: border-box; }
+      .dashboard-card-content.reviews-scroll { max-height: 45vh; overflow-y: auto; }
+      .reviews-scroll {
+        flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; }
+      @media (max-width: 900px) {
+        .dashboard-card-header, .dashboard-card-content { padding-left: 12px; padding-right: 12px; }
+        .dashboard-rightbar { display: none; }
+      }
+      .review-card { background: #f8fafc; border-radius: 16px; box-shadow: 0 2px 8px rgba(60,60,120,0.08); margin-bottom: 26px; padding: 20px 22px 18px 22px; position: relative; border: 2px solid #e0e7ef; transition: box-shadow 0.2s, border 0.2s; }
+      .review-card.no-reply { border-color: #e57373; }
+      .review-card:hover { box-shadow: 0 6px 24px rgba(60,60,120,0.13); }
+      .review-app { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+      .review-app-icon { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; box-shadow: 0 1px 4px rgba(60,60,120,0.10); background: #e0e7ef; display: flex; align-items: center; justify-content: center; font-size: 1.6em; color: #b0bec5; }
+      .review-app-info { flex: 1; }
+      .review-app-title { font-weight: 700; color: #1976d2; font-size: 1.08em; text-decoration: none; }
+      .review-app-bundle { color: #607d8b; font-size: 0.98em; }
+      .review-go-btn { background: linear-gradient(90deg, #1976d2 0%, #43a047 100%); color: #fff; border: none; border-radius: 8px; padding: 7px 18px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(60,60,120,0.10); transition: background 0.2s; }
+      .review-go-btn:hover { background: #1976d2; }
+      .review-user { font-weight: 600; color: #374151; margin-bottom: 2px; }
+      .review-stars { color: #ff9800; font-size: 1.1em; }
+      .review-text { color: #374151; margin: 4px 0 2px 0; }
+      .review-time { font-size: 0.9em; color: #90a4ae; }
+      .review-status { margin-top: 8px; }
+      .review-status-badge { display: inline-block; padding: 3px 12px; border-radius: 6px; font-size: 0.97em; font-weight: 600; background: #e3f2fd; color: #1976d2; margin-bottom: 6px; }
+      .review-status-badge.no-reply { background: #fdecea; color: #e57373; }
+      .review-reply { margin-top: 12px; background: #e3f2fd; border-radius: 8px; padding: 12px 16px; color: #1976d2; }
+      .review-reply-meta { font-size: 0.85em; color: #90a4ae; margin-top: 4px; }
+      .reply-form { margin-top: 14px; display: flex; gap: 8px; }
+      .reply-form input { flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid #e0e7ef; }
+      .reply-form button { background: #1976d2; color: #fff; font-weight: bold; border: none; border-radius: 6px; padding: 8px 18px; transition: background 0.2s; }
+      .reply-form button:hover { background: #43a047; }
+      @media (max-width: 700px) { .dashboard-card-header, .dashboard-card-content { padding-left: 8px; padding-right: 8px; } .review-card { padding: 14px 8px 12px 8px; } }
+      .activity-card { background: #fff; border-radius: 18px; box-shadow: 0 2px 8px rgba(60,60,120,0.08); padding: 20px; margin-bottom: 0; max-width: 350px; width: 100%; height: 100vh; display: flex; flex-direction: column; }
+      .activity-title { font-size: 1.08rem; font-weight: 700; color: #1976d2; margin-bottom: 10px; }
+      .activity-feed { flex: 1 1 0; min-height: 0; overflow-y: auto; list-style: none; padding: 0; margin: 0; font-size: 0.98rem; color: #374151; max-height: none; }
+      .activity-feed li { display: flex; align-items: flex-start; gap: 10px; background: #f8fafc; border-radius: 10px; padding: 10px 12px 8px 12px; margin-bottom: 10px; }
+      .activity-feed .activity-icon { font-size: 1.3em; }
+      .activity-feed .activity-msg { flex: 1; }
+      .activity-feed .activity-time { font-size: 0.85em; color: #90a4ae; margin-left: 8px; }
+      .dashboard-rightbar { width: 350px; min-width: 260px; max-width: 400px; background: none; display: flex; flex-direction: column; align-items: flex-end; padding: 0; height: 100vh; box-sizing: border-box; }
+      @media (max-width: 1200px) { .dashboard-rightbar { display: none; } }
+      @media (max-width: 1200px) {
+        .dashboard-flex { flex-direction: column !important; align-items: center !important; }
+        .dashboard-rightbar { width: 100% !important; max-width: 800px !important; min-width: 0 !important; margin-top: 32px !important; align-items: stretch !important; padding: 0 !important; }
+        .dashboard-card { max-width: 800px !important; width: 100% !important; }
+      }
+      .dashboard-flex { width: 100%; gap: 32px; align-items: flex-start; margin: 0; padding: 0; box-sizing: border-box; }
+      .dashboard-card, .dashboard-rightbar { max-width: 800px; margin-left: 0; margin-right: 0; box-sizing: border-box; }
+    </style>
+  </head>
+  <body class="admin">
+    <div class="admin-main">
+      <aside class="admin-sidebar">
+        <div style="font-size: 1.5rem; font-weight: bold; color: #1976d2; text-align: center; margin-top: 32px; letter-spacing: 1px;">{{ tr('admin_title') if tr else 'Admin' }}</div>
+        <nav>
+          <a href="/admin" class="{% if request.url.path == '/admin' %}active{% endif %}"><span style="font-size:1.2em;">🏠</span> {{ tr('admin_dashboard') if tr else 'Dashboard' }}</a>
+          <a href="/admin/apps" class="{% if '/admin/apps' in request.url.path %}active{% endif %}"><span style="font-size:1.2em;">📦</span> {{ tr('admin_apps') if tr else 'Apps' }}</a>
+          <a href="/admin/settings" class="{% if '/admin/settings' in request.url.path %}active{% endif %}"><span style="font-size:1.2em;">⚙️</span> {{ tr('admin_settings') if tr else 'Settings' }}</a>
+          <a href="/admin/users" class="{% if '/admin/users' in request.url.path %}active{% endif %}"><span style="font-size:1.2em;">👥</span> {{ tr('admin_users') if tr else 'Users' }}</a>
+          <a href="/logout" class="logout"><span style="font-size:1.2em;">🚪</span> {{ tr('logout') if tr else 'Logout' }}</a>
+        </nav>
+      </aside>
+      <main class="admin-content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html> 

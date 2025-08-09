@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: appsyra
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app_distribution_server.app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: UPLOADS_SECRET_AUTH_TOKEN
+        value: your-secret-token-change-this
+      - key: APP_BASE_URL
+        value: https://appsyra.bechattaoui.dev
+      - key: DATABASE_URL
+        fromDatabase:
+          name: appsyra-db
+          property: connectionString
+      - key: STORAGE_URL
+        value: s3://appsyra-files
+      # Cloudflare R2 Configuration (S3-compatible)
+      - key: AWS_ACCESS_KEY_ID
+        value: npIawBmj5qioX4Phn1-OH_yP5jiA1e-Y5MfW1R_T
+      - key: AWS_SECRET_ACCESS_KEY
+        value: npIawBmj5qioX4Phn1-OH_yP5jiA1e-Y5MfW1R_T
+      - key: AWS_ENDPOINT_URL
+        value: https://abb705207351267d8a5c53c2defd412f.r2.cloudflarestorage.com
+      - key: AWS_DEFAULT_REGION
+        value: auto
+    domains:
+      - appsyra.bechattaoui.dev
+
+databases:
+  - name: appsyra-db
+    engine: postgres
+    plan: free

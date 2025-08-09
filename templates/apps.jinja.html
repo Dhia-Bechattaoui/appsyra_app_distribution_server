@@ -1,0 +1,124 @@
+{% extends "base.jinja.html" %}
+
+{% block content %}
+  <style>
+    .app-card {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 4px 24px rgba(60,60,120,0.10);
+      border: 1.5px solid #e0e7ef;
+      width: 280px;
+      padding: 32px 22px 22px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      transition: box-shadow 0.18s, transform 0.18s, border 0.18s;
+      margin-bottom: 8px;
+    }
+    .app-card:hover {
+      box-shadow: 0 8px 32px rgba(60,60,120,0.16);
+      border: 1.5px solid #ff9800;
+      transform: translateY(-4px) scale(1.025);
+    }
+    .app-card-img {
+      max-width: 100px;
+      height: 100px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+      object-fit: cover;
+      margin-bottom: 18px;
+      background: #f8fafc;
+      border: 1px solid #e0e7ef;
+    }
+    .app-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #90a4ae;
+      background: #f8fafc !important;
+    }
+    .app-card-platform {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+    .app-card-title {
+      font-size: 1.28rem;
+      font-weight: 800;
+      color: #1976d2;
+      margin-bottom: 10px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .app-card-desc {
+      color: #607d8b;
+      font-size: 1.07rem;
+      margin-bottom: 16px;
+      text-align: center;
+      min-height: 38px;
+    }
+    .app-card-btn {
+      margin-top: 10px;
+      display: inline-block;
+      background: linear-gradient(90deg, #1976d2 0%, #ff9800 100%);
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.08rem;
+      padding: 12px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+      transition: background 0.2s;
+    }
+    .app-card-platform span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 1.01rem;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 3px 12px;
+    }
+    .app-card-platform .android {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    .app-card-platform .ios {
+      background: #fce4ec;
+      color: #d81b60;
+    }
+  </style>
+<main style="min-height: 60vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch;">
+  <div style="flex: 1 0 auto; max-width: 1100px; margin: 48px auto; padding: 0 18px; display: flex; flex-direction: column;">
+    <h1 style="font-size: 2.2rem; font-weight: 800; color: #1a237e; margin-bottom: 32px; letter-spacing: 1px; text-align: center;">{{ tr('all_apps_title') }}</h1>
+    <div style="flex: 1 0 auto; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+      {% if apps|length == 0 %}
+        <div style="text-align:center; padding: 64px 0 48px 0; color: #607d8b;">
+          <div style="font-size: 4rem; margin-bottom: 18px;">📱</div>
+          <div style="font-size: 1.35rem; font-weight: 600; margin-bottom: 8px;">{{ tr('no_apps_title') }}</div>
+          <div style="font-size: 1.08rem;">{{ tr('no_apps_desc') }}</div>
+        </div>
+      {% else %}
+        <div class="apps-list">
+          {% for app in apps %}
+            <div class="app-card">
+              {% if app.app_picture_url %}
+                <img src="{{ app.app_picture_url }}" class="app-card-img" alt="{{ app.app_title }}" />
+              {% else %}
+                <div class="app-card-img app-placeholder">📱</div>
+              {% endif %}
+              <div style="font-weight:700; margin-bottom:4px;">{{ app.app_title }}</div>
+              <div style="color:#607d8b; font-size:0.98rem;">{{ app.app_description or tr('no_description') }}</div>
+              <a href="/app/{{ app.bundle_id }}" style="display:block;margin-top:10px;color:#1976d2;text-decoration:underline;font-weight:600;">{{ tr('view_app') }}</a>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</main>
+{% endblock %} 

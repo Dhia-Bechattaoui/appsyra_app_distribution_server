@@ -1,0 +1,22 @@
+services:
+  app:
+    image: app-distribution-server:latest
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - app_data:/app/data
+      - app_uploads:/app/uploads
+      - ./static:/app/static
+      - logs:/app/logs
+      - settings_data:/app/settings.json
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=8000
+      - UPLOADS_SECRET_AUTH_TOKEN=mysecretpassword
+      - APP_BASE_URL=https://appsyra.bechattaoui.dev
+volumes:
+  app_data:
+  app_uploads:
+  logs:
+  settings_data: 

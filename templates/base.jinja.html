@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="{{ 'ar' if lang == 'ar' else 'en' }}" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}" style="height: 100%;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page_title }}</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background-color: #f2f4f6;
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      main {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 84px;
+        padding-bottom: 80px;
+      }
+      body:not(.admin) nav {
+        width: 100%; background: rgba(30, 30, 40, 0.55); backdrop-filter: blur(12px); box-shadow: 0 2px 16px rgba(60,60,120,0.10); display: flex; align-items: center; justify-content: space-between; padding: 0 36px; height: 68px; position: fixed; top: 0; left: 0; z-index: 100; color: #fff;
+        transition: box-shadow 0.2s, background 0.2s, transform 0.3s cubic-bezier(.4,1.6,.6,1), top 0.3s cubic-bezier(.4,1.6,.6,1);
+        will-change: transform, top;
+      }
+      body:not(.admin) nav.hide-nav { transform: translateY(-100%); }
+      body:not(.admin) nav > .nav-left, body:not(.admin) nav > .nav-right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+      body:not(.admin) .nav-left > *:not(:first-child) { }
+      body:not(.admin) .nav-hamburger {
+        display: none; background: none; border: none; color: #fff; font-size: 2.1rem; cursor: pointer; position: absolute; top: 0; height: 68px; z-index: 201; margin: 0;
+      }
+      body:not(.admin) .nav-left { position: relative; width: 100%; }
+      .nav-mobile-menu {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 82vw;
+        max-width: 340px;
+        background: rgba(30,30,40,0.97);
+        color: #fff;
+        z-index: 200;
+        padding: 68px 0 18px 0;
+        font-size: 1.18rem;
+        box-shadow: -2px 0 24px rgba(60,60,120,0.18);
+        transform: translateX(100%);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.32s cubic-bezier(.4,1.6,.6,1), opacity 0.22s cubic-bezier(.4,1.6,.6,1);
+      }
+      .nav-mobile-menu.show {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .nav-mobile-menu a, .nav-mobile-menu form button {
+        color: #fff !important;
+        padding: 14px 32px;
+        width: 100%;
+        border: none;
+        background: none;
+        font-size: 1.13rem;
+        font-weight: 600;
+        outline: none;
+        transition: background 0.18s;
+        border-radius: 0;
+        box-shadow: none;
+        text-align: left;
+        display: block;
+      }
+      .nav-mobile-menu a:hover, .nav-mobile-menu form button:hover {
+        background: #1976d2;
+        color: #fff;
+      }
+      .nav-mobile-menu .logout-btn {
+        background: #e53935 !important;
+        color: #fff !important;
+        font-weight: 600;
+        border-radius: 8px;
+        margin: 24px 20px 12px 20px;
+        padding: 12px 0;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+        font-size: 1.13rem;
+        display: block;
+        width: calc(100% - 40px);
+        border: none;
+        outline: none;
+        cursor: pointer;
+        letter-spacing: 0.01em;
+        transition: background 0.18s, box-shadow 0.18s;
+        align-self: flex-end;
+      }
+      .nav-mobile-menu .logout-btn:hover {
+        background: #b71c1c !important;
+      }
+      .nav-mobile-menu .lang-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.13rem;
+        font-weight: 600;
+        width: 100%;
+        text-align: inherit;
+        padding: 14px 32px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.18s;
+      }
+      .nav-mobile-menu .lang-btn:hover {
+        background: #1976d2;
+      }
+      .nav-right { display: flex; }
+      .lang-btn {
+        background: none !important;
+        border: none !important;
+        color: inherit !important;
+        font-size: 1.08rem !important;
+        font-weight: 600 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: color 0.18s;
+        justify-content: center;
+        text-align: center;
+      }
+      .lang-btn:hover {
+        color: #ff9800 !important;
+        background: none !important;
+      }
+      .nav-mobile-menu .close-btn {
+        position: absolute;
+        top: 18px;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        background: none;
+        color: #fff;
+        font-size: 1.5em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 210;
+        transition: border-color 0.18s, color 0.18s;
+      }
+      .nav-mobile-menu .close-btn:hover {
+        border-color: #1976d2;
+        color: #1976d2;
+      }
+      @media (max-width: 900px) {
+        nav { padding: 0 8px !important; }
+        nav > .nav-left { gap: 8px !important; flex-wrap: nowrap; min-width: 0; }
+        .nav-left > .nav-menu-item, .nav-left > form.nav-menu-item { display: none !important; }
+        .nav-hamburger { display: block !important; }
+        .nav-right { display: none !important; }
+      }
+    </style>
+    <style>
+[dir='rtl'] .nav-hamburger { left: 0; right: auto; }
+[dir='ltr'] .nav-hamburger { right: 0; left: auto; }
+[dir='rtl'] .nav-mobile-menu {
+right: 0; left: auto; transform: translateX(100%);
+text-align: right;
+direction: rtl;
+      }
+[dir='ltr'] .nav-mobile-menu {
+left: 0; right: auto; transform: translateX(-100%);
+text-align: left;
+direction: ltr;
+}
+[dir='rtl'] .nav-mobile-menu.show, [dir='ltr'] .nav-mobile-menu.show { transform: translateX(0); }
+[dir='rtl'] .nav-mobile-menu a, [dir='rtl'] .nav-mobile-menu form button {
+text-align: right;
+}
+[dir='ltr'] .nav-mobile-menu a, [dir='ltr'] .nav-mobile-menu form button {
+text-align: left;
+      }
+    </style>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll("time").forEach(function(datetimeElement) {
+          const isoDate = new Date(datetimeElement.dateTime);
+          const formattedDate = isoDate.toLocaleString();
+          datetimeElement.textContent = formattedDate;
+        })
+      });
+    </script>
+
+  </head>
+
+  <body style="min-height: 100vh; display: flex; flex-direction: column;">
+    {% set home_color = '#ff9800' if request.url.path == '/' else '#fff' %}
+    {% set apps_color = '#ff9800' if request.url.path.startswith('/apps') else '#fff' %}
+    {% set contact_color = '#ff9800' if request.url.path.startswith('/contact') else '#fff' %}
+    {% set about_color = '#ff9800' if request.url.path.startswith('/about') else '#fff' %}
+    {% if not request.url.path.startswith('/admin') %}
+    <nav>
+      <div class="nav-left">
+        {% if lang == 'ar' %}
+          <button class="nav-hamburger" id="navHamburger" aria-label="Menu">☰</button>
+          <a href="/" style="display: flex; align-items: center; text-decoration: none; margin-right: 0; margin-left: 0;">
+            <img src="/static/menu-logo.png" alt="logo" style="height: 56px; width: auto;" />
+          </a>
+        {% else %}
+          <a href="/" style="display: flex; align-items: center; text-decoration: none; margin-left: 0;">
+          <img src="/static/menu-logo.png" alt="logo" style="height: 56px; width: auto;" />
+        </a>
+          <button class="nav-hamburger" id="navHamburger" aria-label="Menu">☰</button>
+        {% endif %}
+        <a href="/" style="margin-left: 18px; color: {{ home_color }}; font-weight: 600; text-decoration: none; font-size: 1.08rem;" class="nav-menu-item">{{ tr('menu_home') }}</a>
+        <a href="/apps" style="margin-left: 12px; color: {{ apps_color }}; font-weight: 600; text-decoration: none; font-size: 1.08rem;" class="nav-menu-item">{{ tr('menu_all_apps') }}</a>
+        <a href="/contact" style="margin-left: 12px; color: {{ contact_color }}; font-weight: 600; text-decoration: none; font-size: 1.08rem;" class="nav-menu-item">{{ tr('menu_contact_us') }}</a>
+        <a href="/about" style="margin-left: 12px; color: {{ about_color }}; font-weight: 600; text-decoration: none; font-size: 1.08rem;" class="nav-menu-item">{{ tr('menu_about_us') }}</a>
+        <form method="post" action="/set-lang" style="display: inline;" class="nav-menu-item">
+          {% if lang == 'ar' %}
+            <button type="submit" name="lang" value="en" class="lang-btn"><img src="/static/flag-us.png" alt="US" style="height: 12px; max-width: 18px; width: auto; vertical-align: middle; margin-right: 6px;"/> English</button>
+          {% else %}
+            <button type="submit" name="lang" value="ar" class="lang-btn"><img src="/static/flag-qa.png" alt="Qatar" style="height: 12px; max-width: 18px; width: auto; vertical-align: middle; margin-right: 6px;"/> العربية</button>
+          {% endif %}
+        </form>
+      </div>
+      <div class="nav-right">
+        <a id="loginLogoutBtn" href="/login" class="nav-menu-item" style="color: #fff; background: linear-gradient(90deg, #1976d2 0%, #43a047 100%); font-weight: 500; text-decoration: none; font-size: 1.08rem; padding: 8px 18px; border-radius: 8px; box-shadow: 0 2px 8px rgba(60,60,120,0.10); transition: background 0.2s; white-space: nowrap; display: inline-block; max-width: 100%;">Login</a>
+      </div>
+      <div class="nav-mobile-menu" id="navMobileMenu">
+        <button class="close-btn" id="closeMobileMenuBtn" aria-label="Close Menu" {% if lang == 'ar' %}style="left:18px;right:auto;"{% else %}style="right:18px;left:auto;"{% endif %}>&times;</button>
+        <a href="/" class="nav-menu-item">{{ tr('menu_home') }}</a>
+        <a href="/apps" class="nav-menu-item">{{ tr('menu_all_apps') }}</a>
+        <a href="/contact" class="nav-menu-item">{{ tr('menu_contact_us') }}</a>
+        <a href="/about" class="nav-menu-item">{{ tr('menu_about_us') }}</a>
+        <div style="flex:1;"></div>
+        <div style="width:100%; display:flex; justify-content:center; align-items:center; margin-bottom: 8px;">
+          <form method="post" action="/set-lang" style="display: block; width: auto;">
+            {% if lang == 'ar' %}
+              <button type="submit" name="lang" value="en" class="lang-btn"><img src="/static/flag-us.png" alt="US" style="height: 22px; width: auto; vertical-align: middle; margin-right: 6px;"/> English</button>
+            {% else %}
+              <button type="submit" name="lang" value="ar" class="lang-btn"><img src="/static/flag-qa.png" alt="Qatar" style="height: 22px; width: auto; vertical-align: middle; margin-right: 6px;"/> العربية</button>
+            {% endif %}
+          </form>
+        </div>
+        <form id="logoutFormMobile" method="post" action="/logout" style="width:100%;">
+          <button type="submit" class="logout-btn" style="margin-bottom: 0;">🚪 {{ tr('logout') }}</button>
+        </form>
+        <a id="loginLogoutBtnMobile" href="/login" style="display:none; margin-bottom: 0; color: #fff; background: linear-gradient(90deg, #1976d2 0%, #43a047 100%); font-weight: 600; text-decoration: none; font-size: 1.08rem; padding: 12px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(60,60,120,0.10); transition: background 0.2s; width: 100%; text-align: center;">{{ tr('login') }}</a>
+      </div>
+    </nav>
+    {% endif %}
+<script>
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1') + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+function isLoggedIn() {
+  return getCookie('username') !== null;
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('loginLogoutBtn');
+  var btnMobile = document.getElementById('loginLogoutBtnMobile');
+  var logoutFormMobile = document.getElementById('logoutFormMobile');
+  if (btn && isLoggedIn()) {
+    btn.textContent = '{{ tr('logout') }}';
+    btn.href = '/logout';
+  } else if (btn) { 
+    btn.textContent = '{{ tr('login') }}';
+    btn.href = '/login';
+  }
+  if (logoutFormMobile) {
+    if (isLoggedIn()) {
+      logoutFormMobile.style.display = 'block';
+    } else {
+      logoutFormMobile.style.display = 'none';
+    }
+  }
+  var hamburger = document.getElementById('navHamburger');
+  var mobileMenu = document.getElementById('navMobileMenu');
+  var closeBtn = document.getElementById('closeMobileMenuBtn');
+  if (hamburger && mobileMenu) {
+    hamburger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      mobileMenu.classList.toggle('show');
+    });
+    document.addEventListener('click', function(e) {
+      if (!mobileMenu.contains(e.target) && e.target !== hamburger) {
+        mobileMenu.classList.remove('show');
+      }
+    });
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        mobileMenu.classList.remove('show');
+      });
+    }
+  }
+  var lastScrollY = window.scrollY;
+  var nav = document.querySelector('nav');
+  window.addEventListener('scroll', function() {
+    if (!nav) return;
+    if (window.scrollY > lastScrollY && window.scrollY > 60) {
+      nav.classList.add('hide-nav');
+    } else {
+      nav.classList.remove('hide-nav');
+    }
+    lastScrollY = window.scrollY;
+  });
+  var btnMobile = document.getElementById('loginLogoutBtnMobile');
+  var logoutFormMobile = document.getElementById('logoutFormMobile');
+  if (btnMobile && logoutFormMobile) {
+    if (isLoggedIn()) {
+      btnMobile.style.display = 'none';
+      logoutFormMobile.style.display = 'block';
+    } else {
+      btnMobile.style.display = 'block';
+      logoutFormMobile.style.display = 'none';
+    }
+  }
+});
+</script>
+    <div id="main-content" style="flex: 1 0 auto;">
+    {% block content %}
+    {% endblock %}
+    </div>
+    {% include 'components/footer.jinja.html' %}
+  </body>
+</html>

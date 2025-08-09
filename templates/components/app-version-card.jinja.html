@@ -1,0 +1,266 @@
+{% macro app_version_card(app_info, company_name, download_url, qr_url, stats, lang, description) %}
+<style>
+.version-card-component {
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 8px 32px rgba(60,60,120,0.18), 0 1.5px 8px rgba(25,118,210,0.08);
+  border-radius: 32px;
+  padding: 36px 32px 32px 32px;
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0 auto;
+  position: relative;
+  transition: box-shadow 0.3s;
+  margin-top: 72px;
+}
+.version-card-header-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+  gap: 32px;
+}
+.version-card-left-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+  gap: 0;
+}
+.version-card-top-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+.version-card-app-icon img {
+  width: 96px;
+  height: 96px;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+  object-fit: cover;
+  background: #f5f7fa;
+}
+.version-card-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+  background: #f5f7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #90a4ae;
+}
+.version-card-title-and-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.version-card-title {
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: #1a237e;
+  margin-bottom: 0;
+  letter-spacing: 1.2px;
+  text-align: left;
+}
+.version-card-stats-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  align-items: center;
+  justify-content: center;
+  background: none;
+}
+.version-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  padding: 0 12px;
+  position: relative;
+  font-size: 1.13em;
+  color: #1976d2;
+  font-weight: 700;
+}
+.version-card-stat-main {
+  min-width: 120px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#version-card-rating-stars {
+  font-size: 1.13em;
+  color: #1976d2;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.version-card-stat-sub {
+  font-size: 1.05em;
+  color: #607d8b;
+  font-weight: 500;
+  text-align: center;
+}
+.version-card-stat-divider {
+  width: 1.5px;
+  background: #e0e7ef;
+  margin: 0 8px;
+  border-radius: 2px;
+  height: 32px;
+  align-self: center;
+}
+.version-card-meta-info {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+}
+.version-card-meta, .version-card-info {
+  margin-bottom: 0;
+  line-height: 1.7;
+  white-space: nowrap;
+}
+.version-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 120px;
+}
+.version-card-qr img {
+  width: 150px;
+  height: 150px;
+  display: block;
+  margin: 0 auto 18px auto;
+  background: #f5f7fa;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(60,60,120,0.06);
+  padding: 12px;
+}
+.version-card-download-btn {
+  display: inline-block;
+  background: linear-gradient(90deg, #1976d2 0%, #43a047 100%);
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.18rem;
+  padding: 12px 36px;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(60,60,120,0.10);
+  transition: background 0.2s;
+  margin-bottom: 2px;
+  text-align: center;
+}
+.version-card-download-btn:hover {
+  background: #1976d2;
+}
+.version-card-size-inside {
+  font-size: 0.98em;
+  color: #e3f2fd;
+  font-weight: 500;
+  margin-top: 2px;
+  letter-spacing: 0.01em;
+  display: block;
+  text-align: center;
+}
+.version-card-desc {
+  background: #f5f7fa;
+  border-radius: 14px;
+  padding: 18px 24px;
+  margin: 24px 0 18px 0;
+  color: #607d8b;
+  font-size: 1.13rem;
+  box-shadow: 0 1px 4px rgba(60,60,120,0.06);
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.version-card-desc .desc-title {
+  font-weight: 700;
+  color: #1976d2;
+  margin-bottom: 4px;
+}
+@media (max-width: 900px) {
+  .version-card-header-row { gap: 12px; }
+  .version-card-top-row { gap: 8px; }
+}
+@media (max-width: 700px) {
+  .version-card-header-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .version-card-left-col, .version-card-actions {
+    align-items: center;
+    width: 100%;
+    margin: 0;
+  }
+  .version-card-top-row { flex-direction: column; align-items: center; gap: 0; }
+  .version-card-meta-info { align-items: center; text-align: center; }
+  .version-card-actions { margin-top: 24px; }
+  .version-card-desc { text-align: center; }
+}
+</style>
+<div class="version-card-component">
+  <div class="version-card-header-row">
+    <div class="version-card-left-col">
+      <div class="version-card-top-row">
+        <div class="version-card-app-icon">
+          {% if app_info.app_picture_url %}
+            <img src="{{ app_info.app_picture_url }}" alt="App Picture" />
+          {% else %}
+            <div class="version-card-placeholder">📱</div>
+          {% endif %}
+        </div>
+        <div class="version-card-title-and-stats">
+          <div class="version-card-title">{{ app_info.app_title }}</div>
+          <div class="version-card-stats-row">
+            <div class="version-card-stat version-card-stat-main">
+              <div id="version-card-rating-stars">{{ stats.rating }}</div>
+              <div class="version-card-stat-sub">{{ stats.reviews }}</div>
+            </div>
+            <div class="version-card-stat-divider"></div>
+            <div class="version-card-stat">
+              <div class="playstore-stat-value">{{ stats.downloads }}</div>
+              <div class="playstore-stat-label">{{ stats.downloads_label }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="version-card-meta-info">
+        <div class="version-card-meta" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
+          <span style="background: #e3f2fd; color: #1976d2; border-radius: 8px; padding: 2px 10px; font-weight: 600;">{{ stats.platform }}</span>
+          <span>{{ stats.bundle_id_label }}: {{ app_info.bundle_id }}</span>
+        </div>
+        <div class="version-card-info" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">{{ stats.version_label }}: {{ app_info.bundle_version }}</div>
+        <div class="version-card-info" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">{{ stats.uploaded_label }}: {% if app_info.created_at %}<time datetime="{{ app_info.created_at }}">{{ app_info.created_at }}</time>{% endif %}</div>
+      </div>
+    </div>
+    <div class="version-card-actions">
+      <div class="version-card-qr">
+        <img src="{{ qr_url }}" alt="QR Code" />
+      </div>
+      <a href="{{ download_url }}" class="version-card-download-btn" download>
+        {{ stats.download_label }}
+        <div class="version-card-size-inside">{{ stats.size }}</div>
+      </a>
+    </div>
+  </div>
+  <div class="version-card-desc">
+    <span class="desc-title" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}" style="text-align: {{ 'right' if lang == 'ar' else 'left' }}">{{ stats.description_label }}:</span>
+    <span class="desc-text" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}" style="text-align: {{ 'right' if lang == 'ar' else 'left' }}">{{ description }}</span>
+  </div>
+</div>
+{% endmacro %} 

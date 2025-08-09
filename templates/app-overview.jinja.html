@@ -1,0 +1,152 @@
+{% extends "base.jinja.html" %}
+{% import 'components/app-version-card.jinja.html' as version_comp %}
+
+{% block content %}
+{% set latest_build = builds[0] if builds else None %}
+<main style="display: flex; flex-direction: column; align-items: center; min-height: 80vh; background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%); padding: 0;" {% if lang == 'ar' %}dir="rtl"{% endif %}>
+  {% if latest_build %}
+    {{ version_comp.app_version_card(
+      latest_build,
+      company_name,
+      (latest_build.platform == 'android' and '/get/' ~ latest_build.upload_id ~ '/app.apk') or '/get/' ~ latest_build.upload_id ~ '/app.ipa',
+      '/get/' ~ latest_build.upload_id ~ '/qrcode',
+      {
+        'rating': avg_rating ~ ' ★',
+        'reviews': reviews_count ~ ' ' ~ tr('reviews_count'),
+        'downloads': downloads_count,
+        'downloads_label': tr('downloads_count'),
+        'platform': tr('platform_' ~ latest_build.platform),
+        'bundle_id_label': tr('bundle_id'),
+        'version_label': tr('version'),
+        'uploaded_label': tr('uploaded'),
+        'download_label': tr('download_latest'),
+        'size': latest_build.human_file_size,
+        'description_label': tr('description')
+      },
+      lang,
+      latest_build.app_description or ''
+    ) }}
+        {% endif %}
+  <div style="background: #fff; box-shadow: 0 8px 32px rgba(60,60,120,0.12); border-radius: 24px; padding: 40px 32px 32px 32px; margin-top: 24px; max-width: 900px; width: 100%;">
+    <h2 style="font-size: 1.2rem; color: #1976d2; margin-bottom: 10px;">{{ tr('archive_versions') }}</h2>
+    <div style="text-align: left;">
+      <table style="width: 100%; border-collapse: collapse;" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
+        <thead>
+          <tr style="background: #f5f7fa; color: #374151;">
+            <th style="padding: 8px 4px; text-align: {{ 'right' if lang == 'ar' else 'left' }};">{{ tr('version') }}</th>
+            <th style="padding: 8px 4px; text-align: {{ 'right' if lang == 'ar' else 'left' }};">{{ tr('uploaded') }}</th>
+            <th style="padding: 8px 4px; text-align: {{ 'right' if lang == 'ar' else 'left' }};">{{ tr('size') }}</th>
+            <th style="padding: 8px 4px; text-align: {{ 'right' if lang == 'ar' else 'left' }};">{{ tr('download') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for build in builds %}
+            <tr style="border-bottom: 1px solid #e0e7ef; cursor: pointer;" onclick="if(event.target.tagName !== 'A'){ window.location='/app/{{ build.bundle_id }}/{{ build.upload_id }}'; }">
+              <td style="padding: 8px 4px; text-align: {{ 'right' if lang == 'ar' else 'left' }};">{{ build.bundle_version }}</td>
+              <td style="padding: 8px 4px; text-align: {{ 'right' if lang == 'ar' else 'left' }};">{% if build.created_at %}<time datetime="{{ build.created_at }}">{{ build.created_at }}</time>{% endif %}</td>
+              <td style="padding: 8px 4px; text-align: {{ 'right' if lang == 'ar' else 'left' }};">{{ build.human_file_size }}</td>
+              <td style="padding: 8px 4px; text-align: {{ 'right' if lang == 'ar' else 'left' }};">
+                {% if build.platform == 'android' %}
+                  <a href="/get/{{ build.upload_id }}/app.apk" style="color: #1976d2; text-decoration: underline; display: inline-block; position: relative; min-width: 80px; text-align: inherit;" onclick="event.stopPropagation();">
+                    {{ tr('download') }}
+                  </a>
+                {% else %}
+                  <a href="/get/{{ build.upload_id }}/app.ipa" style="color: #1976d2; text-decoration: underline; display: inline-block; position: relative; min-width: 80px; text-align: inherit;" onclick="event.stopPropagation();">
+                    {{ tr('download') }}
+                  </a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <hr style="margin: 32px 0 18px 0; border: none; border-top: 1px solid #e0e7ef;" />
+    <div id="appStats" style="margin-bottom: 18px; font-size: 1.1em; color: #374151;"></div>
+    <div id="reviewsSection" style="margin-top: 32px;">
+      <h2 style="font-size: 1.2rem; color: #1976d2; margin-bottom: 10px;">{{ tr('reviews_title') }}</h2>
+      <div id="reviewFormContainer"></div>
+      <div id="reviewsList"></div>
+    </div>
+  </div>
+</main>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\$1') + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+  const bundleId = {{ app_info.bundle_id|tojson }};
+  const username = getCookie('username');
+  const company_name = {{ company_name|tojson }};
+  const translations = {{ translations|tojson }};
+  function tr(key) { return translations[key] || key; }
+  function renderAdminReply(company, reply) {
+    return tr('reviews_admin_reply').replace(/\{\{ company_name \}\}/g, company).replace(/\{\{ reply \}\}/g, reply);
+  }
+  // Review form for logged-in users
+  if (username) {
+    document.getElementById('reviewFormContainer').innerHTML = `
+      <form id="reviewForm" style="margin-bottom: 18px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span>${tr('reviews_rating')}</span>
+          <span id="starRating">
+            ${[1,2,3,4,5].map(i => `<span data-star="${i}" style="font-size:1.5em; cursor:pointer; color:#e0e7ef;">★</span>`).join('')}
+          </span>
+        </div>
+        <textarea name="comment" rows="2" placeholder="${tr('reviews_write_reply')}" style="padding:8px; border-radius:6px; border:1px solid #e0e7ef;"></textarea>
+        <button type="submit" style="background:#1976d2; color:#fff; font-weight:bold; border:none; border-radius:6px; padding:8px 18px; align-self:flex-end;">${tr('reviews_submit')}</button>
+      </form>
+    `;
+    let rating = 0;
+    document.querySelectorAll('#starRating span').forEach(star => {
+      star.onclick = function() {
+        rating = parseInt(this.getAttribute('data-star'));
+        document.querySelectorAll('#starRating span').forEach((s, i) => {
+          s.style.color = i < rating ? '#ff9800' : '#e0e7ef';
+        });
+      };
+    });
+    document.getElementById('reviewForm').onsubmit = function(e) {
+      e.preventDefault();
+      const comment = this.comment.value;
+      fetch('/api/reviews/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({bundle_id: bundleId, rating, comment})
+      }).then(r => r.json()).then(res => {
+        if(res.ok) location.reload();
+        else alert('Failed to submit review');
+      });
+    };
+  }
+  // Fetch and display reviews
+  fetch(`/api/reviews/app/${bundleId}`)
+    .then(r => r.json())
+    .then(data => {
+      const list = document.getElementById('reviewsList');
+      // Pre-fill review form if user_review exists
+      if (username && data.user_review) {
+        document.querySelector('#reviewForm textarea').value = data.user_review.comment;
+        let rating = data.user_review.rating;
+        document.querySelectorAll('#starRating span').forEach((s, i) => {
+          s.style.color = i < rating ? '#ff9800' : '#e0e7ef';
+        });
+        document.getElementById('reviewForm').querySelector('button[type="submit"]').textContent = '{{ tr('reviews_update') }}';
+      }
+      if (!data.reviews.length) {
+        list.innerHTML = `<div style="color:#607d8b;">${tr('reviews_no_reviews')}</div>`;
+        return;
+      }
+      list.innerHTML = data.reviews.map(r => `
+        <div style="background:#f8fafc; border-radius:10px; margin-bottom:10px; padding:10px 14px;">
+          <div style="font-weight:600; color:#1976d2;">${r.username} <span style="color:#ff9800; font-size:1.1em;">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span></div>
+          <div style="color:#374151; margin:4px 0 2px 0;">${r.comment}</div>
+          <div style="font-size:0.9em; color:#90a4ae;">${new Date(r.timestamp*1000).toLocaleString()}</div>
+          ${r.reply ? `<div style="margin-top:10px; background:#e3f2fd; border-radius:8px; padding:10px 14px; color:#1976d2;"><b>${company_name}:</b> ${r.reply}<div style="font-size:0.85em; color:#90a4ae; margin-top:4px;">${new Date(r.reply_timestamp*1000).toLocaleString()}</div></div>` : ""}
+        </div>
+      `).join("");
+    });
+});
+</script>
+{% endblock %} 
