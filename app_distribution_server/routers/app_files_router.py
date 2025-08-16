@@ -83,7 +83,7 @@ async def get_app_file(
         "ip": ip
     }
     os.makedirs("logs", exist_ok=True)
-    log_path = "logs/downloads.log"
+    log_path = os.path.join("logs", "downloads.log")
     with open(log_path, "a") as f:
         f.write(json.dumps(log_entry) + "\n")
     print(f"[DEBUG] Logged download: {log_entry} to {log_path}")

@@ -1,4 +1,8 @@
 import secrets
+import os
+import json
+import datetime
+from collections import defaultdict
 
 from fastapi import APIRouter, Depends, File, Path, UploadFile, Query, Request
 from fastapi.responses import PlainTextResponse, JSONResponse
@@ -26,10 +30,6 @@ from app_distribution_server.storage import (
     load_build_info,
     save_upload,
 )
-import os
-import json
-import datetime
-from collections import defaultdict
 from app_distribution_server.routers.html_router import load_reviews, get_current_user
 
 x_auth_token_dependency = APIKeyHeader(name="X-Auth-Token")
@@ -162,7 +162,7 @@ async def download_stats(
     group_by: str = Query("day", enum=["day", "month", "year"]),
     bundle_id: str = Query(None)
 ):
-    log_path = "logs/downloads.log"
+    log_path = os.path.join("logs", "downloads.log")
     if not os.path.exists(log_path):
         return {"data": []}
     counts = defaultdict(int)
@@ -191,9 +191,8 @@ async def activity_feed(request: Request, limit: int = Query(10)):
     user = await get_current_user(request)
     if user.get("role") not in ["owner", "admin"]:
         return JSONResponse({"error": "forbidden"}, status_code=403)
-    import os
     lang = request.cookies.get("lang", "en")
-    log_path = "logs/activity.log"
+    log_path = os.path.join("logs", "activity.log")
     if not os.path.exists(log_path):
         return {"data": []}
     lines = []
@@ -207,10 +206,10 @@ async def activity_feed(request: Request, limit: int = Query(10)):
     lines = sorted(lines, key=lambda x: x.get("timestamp", ""), reverse=True)[:limit]
     # Load translations
     try:
-        with open(f"translations/{lang}.json", "r") as tf:
+        with open(os.path.join("translations", f"{lang}.json"), "r") as tf:
             translations = json.load(tf)
     except Exception:
-        with open("translations/en.json", "r") as tf:
+        with open(os.path.join("translations", "en.json"), "r") as tf:
             translations = json.load(tf)
     messages = []
     for entry in lines:
@@ -258,7 +257,7 @@ async def recent_reviews(request: Request, limit: int = 20):
 
 @download_stats_router.get("/admin/api/unique-downloads", response_class=JSONResponse)
 async def unique_downloads(bundle_id: str):
-    log_path = "logs/downloads.log"
+    log_path = os.path.join("logs", "downloads.log")
     if not os.path.exists(log_path):
         return {"count": 0}
     unique_ips = set()

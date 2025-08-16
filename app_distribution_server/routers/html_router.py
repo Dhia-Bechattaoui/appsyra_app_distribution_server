@@ -225,7 +225,7 @@ async def admin_create_app_post(request: Request, app_title: str = Form(...), bu
         "app_title": app_title,
         "username": username
     }
-    with open("logs/activity.log", "a") as f:
+    with open(os.path.join("logs", "activity.log"), "a") as f:
         f.write(json.dumps(activity) + "\n")
     return RedirectResponse("/admin/apps", status_code=HTTP_303_SEE_OTHER)
 
@@ -259,9 +259,9 @@ async def admin_edit_app_post(request: Request, bundle_id: str, app_title: str =
         ext = app_picture_file.filename.split('.')[-1].lower()
         if ext not in ["jpg", "jpeg", "png", "webp", "gif"]:
             return templates.TemplateResponse("admin-edit-app.jinja.html", {"request": request, "app_info": builds[0], "bundle_id": bundle_id, "error": "Invalid image format.", "tr": tr, "lang": lang, "translations": translations})
-        photo_dir = "static/app_photos"
+        photo_dir = os.path.join("static", "app_photos")
         os.makedirs(photo_dir, exist_ok=True)
-        photo_path = f"{photo_dir}/{bundle_id}.{ext}"
+        photo_path = os.path.join(photo_dir, f"{bundle_id}.{ext}")
         with open(photo_path, "wb") as f:
             shutil.copyfileobj(app_picture_file.file, f)
         app_picture_url = f"/static/app_photos/{bundle_id}.{ext}"
@@ -280,7 +280,7 @@ async def admin_edit_app_post(request: Request, bundle_id: str, app_title: str =
         "app_title": app_title,
         "username": username
     }
-    with open("logs/activity.log", "a") as f:
+    with open(os.path.join("logs", "activity.log"), "a") as f:
         f.write(json.dumps(activity) + "\n")
     return RedirectResponse(f"/admin/apps", status_code=HTTP_303_SEE_OTHER)
 
@@ -332,7 +332,7 @@ async def admin_upload_version_post(request: Request, app_file: UploadFile = For
         "version": build_info.bundle_version,
         "username": username
     }
-    with open("logs/activity.log", "a") as f:
+    with open(os.path.join("logs", "activity.log"), "a") as f:
         f.write(json.dumps(activity) + "\n")
     return RedirectResponse(f"/app/{build_info.bundle_id}", status_code=HTTP_303_SEE_OTHER)
 
@@ -379,7 +379,7 @@ async def app_overview_page(request: Request, bundle_id: str) -> HTMLResponse:
     avg_rating = round(sum(r.get("rating", 0) for r in app_reviews) / reviews_count, 1) if reviews_count else 0
     # Calculate downloads_count
     downloads_count = 0
-    log_path = "logs/downloads.log"
+    log_path = os.path.join("logs", "downloads.log")
     if os.path.exists(log_path):
         with open(log_path, "r") as f:
             downloads_count = len([1 for line in f if json.loads(line).get("bundle_id") == bundle_id])
@@ -460,7 +460,7 @@ async def admin_settings_post(request: Request, duplicate_upload_policy: str = F
             "lang": lang,
             "username": username
         }
-        with open("logs/activity.log", "a") as f:
+        with open(os.path.join("logs", "activity.log"), "a") as f:
             f.write(json.dumps(activity) + "\n")
     # Set language cookie if changed
     response = templates.TemplateResponse(
@@ -497,10 +497,10 @@ def get_lang(request: Request):
 
 def load_translations(lang):
     try:
-        with open(f"translations/{lang}.json", "r") as f:
+        with open(os.path.join("translations", f"{lang}.json"), "r") as f:
             return json.load(f)
     except Exception:
-        with open(f"translations/en.json", "r") as f:
+        with open(os.path.join("translations", "en.json"), "r") as f:
             return json.load(f)
 
 # Patch all template responses to include lang
@@ -766,6 +766,6 @@ async def api_reply_review(request: Request):
         "reply": data["reply"],
         "admin": user["username"]
     }
-    with open("logs/activity.log", "a") as f:
+    with open(os.path.join("logs", "activity.log"), "a") as f:
         f.write(json.dumps(activity) + "\n")
     return {"ok": True}
